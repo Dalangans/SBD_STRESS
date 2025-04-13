@@ -30,7 +30,30 @@ exports.createTransaction = async (transaction) => {
 
 exports.getTransaction = async () => {
     try {
-        const res = await db.query("SELECT * FROM transactions");
+        const res = await db.query(`
+            SELECT 
+                t.*,
+                json_build_object(
+                    'id', u.id,
+                    'name', u.name,
+                    'email', u.email,
+                    'password', u.password,
+                    'balance', u.balance,
+                    'created_at', u.created_at
+                ) AS user,
+                json_build_object(
+                    'id', i.id,
+                    'name', i.name,
+                    'price', i.price,
+                    'store_id', i.store_id,
+                    'image_url', i.image_url,
+                    'stock', i.stock,
+                    'created_at', i.created_at
+                ) AS item
+            FROM transactions t
+            JOIN users u ON t.user_id = u.id
+            JOIN items i ON t.item_id = i.id
+        `);
         return res.rows;
     } catch (error) {
         console.error("Error executing query", error);
